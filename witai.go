@@ -511,9 +511,22 @@ func (c *Client) UpdateEntity(entityId *string, doc *string, values []EntityValu
 // delete an entity
 //
 // https://wit.ai/docs/http/20160330#entities-destroy-link
-func (c *Client) DeleteEntity(entityId *string) (response interface{}, err error) {
-	// TODO
-	return nil, nil
+func (c *Client) DeleteEntity(entityId *string) (response map[string]string, err error) {
+	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/entities/%s", *entityId), nil)
+
+	var bytes []byte
+	if bytes, err = c.request("DELETE", *url, nil); err == nil {
+		var entityRes map[string]string
+		if err = json.Unmarshal(bytes, &entityRes); err == nil {
+			response = entityRes
+		} else {
+			err = fmt.Errorf("delete entity parse error: %s", err)
+		}
+	} else {
+		err = fmt.Errorf("delete entity request error: %s", err)
+	}
+
+	return response, err
 }
 
 // add a new value to an entity
