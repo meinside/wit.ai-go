@@ -376,9 +376,22 @@ func (c *Client) CreateIntentExpressions(intentId *string, expressions []string)
 // remove an expression from an intent
 //
 // https://wit.ai/docs/http/20160330#destroy-intent-expression-link
-func (c *Client) DeleteExpression(intentId *string, expressionId *string) (response interface{}, err error) {
-	// TODO
-	return nil, nil
+func (c *Client) DeleteExpression(intentId *string, expressionId *string) (response map[string]string, err error) {
+	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/intents/%s/expressions/%s", *intentId, *expressionId), nil)
+
+	var bytes []byte
+	if bytes, err = c.request("DELETE", *url, nil); err == nil {
+		var exprRes map[string]string
+		if err = json.Unmarshal(bytes, &exprRes); err == nil {
+			response = exprRes
+		} else {
+			err = fmt.Errorf("delete expression parse error: %s", err)
+		}
+	} else {
+		err = fmt.Errorf("delete expression request error: %s", err)
+	}
+
+	return response, err
 }
 
 // retrieve the list of all available entities
