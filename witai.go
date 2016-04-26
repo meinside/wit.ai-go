@@ -350,9 +350,27 @@ func (c *Client) UpdateIntentAttrs(intentId, name, doc, metadata *string) (respo
 // add new expressions to an intent
 //
 // https://wit.ai/docs/http/20160330#create-intent-expressions-link
-func (c *Client) CreateIntentExpressions(intentId *string, expressions []interface{}) (response []IntentExpression, err error) {
-	// TODO
-	return []IntentExpression{}, nil
+func (c *Client) CreateIntentExpressions(intentId *string, expressions []string) (response []IntentExpression, err error) {
+	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/intents/%s/expressions", *intentId), nil)
+
+	body := []interface{}{}
+	for _, expression := range expressions {
+		body = append(body, map[string]string{"body": expression})
+	}
+
+	var bytes []byte
+	if bytes, err = c.request("POST", *url, body); err == nil {
+		var intentRes []IntentExpression
+		if err = json.Unmarshal(bytes, &intentRes); err == nil {
+			response = intentRes
+		} else {
+			err = fmt.Errorf("create intent expressions parse error: %s", err)
+		}
+	} else {
+		err = fmt.Errorf("create intent expressions request error: %s", err)
+	}
+
+	return response, err
 }
 
 // remove an expression from an intent
