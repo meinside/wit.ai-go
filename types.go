@@ -170,12 +170,31 @@ func (o Outcome) String() string {
 type Intent struct {
 	ResponseError
 
-	Id          *string       `json:"id,omitempty"`
-	Name        *string       `json:"name,omitempty"`
-	Doc         *string       `json:"doc,omitempty"`
-	Metadata    *string       `json:"metadata,omitempty"`
-	Expressions []interface{} `json:"expressions,omitempty"`
-	Meta        interface{}   `json:"meta,omitempty"`
+	Id          *string            `json:"id,omitempty"`
+	Name        *string            `json:"name,omitempty"`
+	Doc         *string            `json:"doc,omitempty"`
+	Metadata    *string            `json:"metadata,omitempty"`
+	Expressions []IntentExpression `json:"expressions,omitempty"`
+	Meta        interface{}        `json:"meta,omitempty"`
+}
+
+type IntentExpression struct {
+	Id   *string `json:"id,omitempty"`
+	Body *string `json:"body,omitempty"`
+}
+
+func NewIntentExpression(body string) IntentExpression {
+	return IntentExpression{
+		Body: &body,
+	}
+}
+
+func NewIntentExpressions(body ...string) []IntentExpression {
+	expressions := []IntentExpression{}
+	for _, b := range body {
+		expressions = append(expressions, NewIntentExpression(b))
+	}
+	return expressions
 }
 
 func (i Intent) String() string {
@@ -203,6 +222,18 @@ func (i Intent) String() string {
 	}
 	if i.Meta != nil {
 		attrs = append(attrs, fmt.Sprintf("Meta: %v", i.Meta))
+	}
+
+	return fmt.Sprintf("{%s}", strings.Join(attrs, ", "))
+}
+
+func (i IntentExpression) String() string {
+	attrs := []string{}
+	if i.Id != nil {
+		attrs = append(attrs, fmt.Sprintf("Id: %s", *i.Id))
+	}
+	if i.Body != nil {
+		attrs = append(attrs, fmt.Sprintf("Body: %s", *i.Body))
 	}
 
 	return fmt.Sprintf("{%s}", strings.Join(attrs, ", "))
@@ -283,12 +314,12 @@ func (i IntentDetailExpression) String() string {
 	return fmt.Sprintf("{%s}", strings.Join(attrs, ", "))
 }
 
-type IntentExpression struct {
+type IntentExpressionCreated struct {
 	IntentId *string `json:"intent_id,omitempty"`
 	Body     *string `json:"body,omitempty"`
 }
 
-func (i IntentExpression) String() string {
+func (i IntentExpressionCreated) String() string {
 	attrs := []string{}
 	if i.IntentId != nil {
 		attrs = append(attrs, fmt.Sprintf("IntentId: %s", *i.IntentId))
