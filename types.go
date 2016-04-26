@@ -332,6 +332,8 @@ func (i IntentAttributes) String() string {
 }
 
 type Entity struct {
+	ResponseError
+
 	Id      *string       `json:"id"`
 	Name    *string       `json:"name"`
 	Doc     *string       `json:"doc"`
@@ -344,6 +346,12 @@ type Entity struct {
 
 func (e Entity) String() string {
 	attrs := []string{}
+	if e.Error != nil {
+		attrs = append(attrs, fmt.Sprintf("Error: %s", *e.Error))
+	}
+	if e.Code != nil {
+		attrs = append(attrs, fmt.Sprintf("Code: %s", *e.Code))
+	}
 	if e.Id != nil {
 		attrs = append(attrs, fmt.Sprintf("Id: %s", *e.Id))
 	}
@@ -367,7 +375,7 @@ func (e Entity) String() string {
 }
 
 type EntityValue struct {
-	Expressions []string `json:"expression"`
+	Expressions []string `json:"expressions"`
 	Value       *string  `json:"value"`
 }
 

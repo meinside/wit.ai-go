@@ -418,9 +418,36 @@ func (c *Client) GetAllEntities() (response []string, err error) {
 // create a new entity
 //
 // https://wit.ai/docs/http/20160330#entities-post-link
-func (c *Client) CreateNewEntity(id *string, doc *string, values []interface{}) (response Entity, err error) {
-	// TODO
-	return Entity{}, nil
+func (c *Client) CreateNewEntity(id *string, doc *string, values []EntityValue) (response Entity, err error) {
+	url := c.makeUrl("https://api.wit.ai/entities", nil)
+
+	data := map[string]interface{}{
+		"id": *id,
+	}
+	if doc != nil {
+		data["doc"] = *doc
+	}
+	if len(values) > 0 {
+		data["values"] = values
+	}
+
+	var bytes []byte
+	if bytes, err = c.request("POST", *url, data); err == nil {
+		var entityRes Entity
+		if err = json.Unmarshal(bytes, &entityRes); err == nil {
+			if entityRes.Error == nil {
+				response = entityRes
+			} else {
+				err = fmt.Errorf("new entity response error: %s", *entityRes.Error)
+			}
+		} else {
+			err = fmt.Errorf("new entity parse error: %s", err)
+		}
+	} else {
+		err = fmt.Errorf("new entity request error: %s", err)
+	}
+
+	return response, err
 }
 
 // retrieve all values of an entity
