@@ -1,9 +1,10 @@
-// types
+// types.go: responses and data types
 
 package witai
 
 import (
 	"fmt"
+	"strings"
 )
 
 type Client struct {
@@ -21,18 +22,36 @@ type ResponseError struct {
 }
 
 // https://wit.ai/docs/http/20160330#converse-link
-type ResponseConverse struct {
+type Converse struct {
 	ResponseError
 
-	Type       *string     `json:"type"`
-	Message    *string     `json:"msg,omitempty"`
-	Action     *string     `json:"action,omitempty"`
-	Entities   interface{} `json:"entities,omitempty"`
-	Confidence float32     `json:"confidence"`
+	Type       *string                `json:"type,omitempty"`
+	Message    *string                `json:"msg,omitempty"`
+	Action     *string                `json:"action,omitempty"`
+	Entities   map[string]interface{} `json:"entities,omitempty"`
+	Confidence float32                `json:"confidence"`
 }
 
-func (r ResponseConverse) String() string {
-	return fmt.Sprintf("{Type: %s, Message: %s, Action: %s, Entities: %v, Confidence: %.6f}", *r.Type, *r.Message, *r.Action, r.Entities, r.Confidence)
+func (r Converse) String() string {
+	attrs := []string{}
+	if r.Error != nil {
+		attrs = append(attrs, fmt.Sprintf("Error: %s", *r.Error))
+	}
+	if r.Code != nil {
+		attrs = append(attrs, fmt.Sprintf("Code: %s", *r.Code))
+	}
+	if r.Type != nil {
+		attrs = append(attrs, fmt.Sprintf("Type: %s", *r.Type))
+	}
+	if r.Message != nil {
+		attrs = append(attrs, fmt.Sprintf("Message: %s", *r.Message))
+	}
+	if r.Entities != nil {
+		attrs = append(attrs, fmt.Sprintf("Entities: %v", r.Entities))
+	}
+	attrs = append(attrs, fmt.Sprintf("Confidence: %.6f", r.Confidence))
+
+	return fmt.Sprintf("{%s}", strings.Join(attrs, ", "))
 }
 
 // https://wit.ai/docs/http/20160330#context-link
@@ -45,17 +64,43 @@ type Context struct {
 }
 
 func (c Context) String() string {
-	return fmt.Sprintf("{State: %v, ReferenceTime: %s, TimeZone: %s, Entities: %v, Location: %v}", c.State, *c.ReferenceTime, *c.TimeZone, c.Entities, c.Location)
+	attrs := []string{}
+	attrs = append(attrs, fmt.Sprintf("State: %v", c.State))
+	if c.ReferenceTime != nil {
+		attrs = append(attrs, fmt.Sprintf("ReferenceTime: %s", *c.ReferenceTime))
+	}
+	if c.TimeZone != nil {
+		attrs = append(attrs, fmt.Sprintf("TimeZone: %s", *c.TimeZone))
+	}
+	if c.Entities != nil {
+		attrs = append(attrs, fmt.Sprintf("Entities: %v", c.Entities))
+	}
+	if c.Location != nil {
+		attrs = append(attrs, fmt.Sprintf("Location: %v", c.Location))
+	}
+
+	return fmt.Sprintf("{%s}", strings.Join(attrs, ", "))
 }
 
 type Entities struct {
-	Id     *string       `json:"id"`
+	Id     *string       `json:"id,omitempty"`
 	Doc    *string       `json:"doc,omitempty"`
-	Values []interface{} `json:"values,omitempty"`
+	Values []EntityValue `json:"values,omitempty"`
 }
 
 func (e Entities) String() string {
-	return fmt.Sprintf("{Id: %s, Doc: %s, Values: %v}", *e.Id, *e.Doc, e.Values)
+	attrs := []string{}
+	if e.Id != nil {
+		attrs = append(attrs, fmt.Sprintf("Id: %s", *e.Id))
+	}
+	if e.Doc != nil {
+		attrs = append(attrs, fmt.Sprintf("Doc: %s", *e.Doc))
+	}
+	if len(e.Values) > 0 {
+		attrs = append(attrs, fmt.Sprintf("Values: %v", e.Values))
+	}
+
+	return fmt.Sprintf("{%s}", strings.Join(attrs, ", "))
 }
 
 type Location struct {
@@ -68,7 +113,7 @@ func (l Location) String() string {
 }
 
 // https://wit.ai/docs/http/20160330#get-intent-via-text-link
-type ResponseMessage struct {
+type Message struct {
 	ResponseError
 
 	MessageId *string   `json:"msg_id"`
@@ -76,23 +121,55 @@ type ResponseMessage struct {
 	Outcomes  []Outcome `json:"outcomes"`
 }
 
-func (r ResponseMessage) String() string {
-	return fmt.Sprintf("{MessageId: %s, Text: %s, Outcomes: %v}", *r.MessageId, *r.Text, r.Outcomes)
+func (r Message) String() string {
+	attrs := []string{}
+	if r.Error != nil {
+		attrs = append(attrs, fmt.Sprintf("Error: %s", *r.Error))
+	}
+	if r.Code != nil {
+		attrs = append(attrs, fmt.Sprintf("Code: %s", *r.Code))
+	}
+	if r.MessageId != nil {
+		attrs = append(attrs, fmt.Sprintf("MessageId: %s", *r.MessageId))
+	}
+	if r.Text != nil {
+		attrs = append(attrs, fmt.Sprintf("Text: %s", *r.Text))
+	}
+	if len(r.Outcomes) > 0 {
+		attrs = append(attrs, fmt.Sprintf("Outcomes: %v", r.Outcomes))
+	}
+
+	return fmt.Sprintf("{%s}", strings.Join(attrs, ", "))
 }
 
 type Outcome struct {
-	Text       *string     `json:"_text"`
-	Intent     *string     `json:"intent"`
-	Entities   interface{} `json:"entities"`
-	Confidence float32     `json:"confidence"`
+	Text       *string                `json:"_text"`
+	Intent     *string                `json:"intent"`
+	Entities   map[string]interface{} `json:"entities"`
+	Confidence float32                `json:"confidence"`
 }
 
 func (o Outcome) String() string {
-	return fmt.Sprintf("{Text: %s, Intent: %s, Entities: %v, Confidence: %.6f}", *o.Text, *o.Intent, o.Entities, o.Confidence)
+	attrs := []string{}
+	if o.Text != nil {
+		attrs = append(attrs, fmt.Sprintf("Text: %s", *o.Text))
+	}
+	if o.Intent != nil {
+		attrs = append(attrs, fmt.Sprintf("Intent: %s", *o.Intent))
+	}
+	if o.Entities != nil {
+		attrs = append(attrs, fmt.Sprintf("Entities: %v", o.Entities))
+	}
+	attrs = append(attrs, fmt.Sprintf("Confidence: %.6f", o.Confidence))
+
+	return fmt.Sprintf("{%s}", strings.Join(attrs, ", "))
 }
 
 type Intent struct {
-	Name        *string       `json:"name"`
+	ResponseError
+
+	Id          *string       `json:"id,omitempty"`
+	Name        *string       `json:"name,omitempty"`
 	Doc         *string       `json:"doc,omitempty"`
 	Metadata    *string       `json:"metadata,omitempty"`
 	Expressions []interface{} `json:"expressions,omitempty"`
@@ -100,11 +177,183 @@ type Intent struct {
 }
 
 func (i Intent) String() string {
-	return fmt.Sprintf("{Name: %s, Doc: %s, Metadata: %s, Expressions: %v, Meta: %v}", *i.Name, *i.Doc, *i.Metadata, i.Expressions, i.Meta)
+	attrs := []string{}
+	if i.Error != nil {
+		attrs = append(attrs, fmt.Sprintf("Error: %s", *i.Error))
+	}
+	if i.Code != nil {
+		attrs = append(attrs, fmt.Sprintf("Code: %s", *i.Code))
+	}
+	if i.Id != nil {
+		attrs = append(attrs, fmt.Sprintf("Id: %s", *i.Id))
+	}
+	if i.Name != nil {
+		attrs = append(attrs, fmt.Sprintf("Name: %s", *i.Name))
+	}
+	if i.Doc != nil {
+		attrs = append(attrs, fmt.Sprintf("Doc: %s", *i.Doc))
+	}
+	if i.Metadata != nil {
+		attrs = append(attrs, fmt.Sprintf("Metadata: %s", *i.Metadata))
+	}
+	if len(i.Expressions) > 0 {
+		attrs = append(attrs, fmt.Sprintf("Expressions: %v", i.Expressions))
+	}
+	if i.Meta != nil {
+		attrs = append(attrs, fmt.Sprintf("Meta: %v", i.Meta))
+	}
+
+	return fmt.Sprintf("{%s}", strings.Join(attrs, ", "))
 }
 
-type ResponseIntents struct {
+type Intents struct {
 	ResponseError
 
-	Intents []interface{} `json:"intents"`
+	Intents []Intent `json:"intents"`
+}
+
+func (r Intents) String() string {
+	attrs := []string{}
+	if r.Error != nil {
+		attrs = append(attrs, fmt.Sprintf("Error: %s", *r.Error))
+	}
+	if r.Code != nil {
+		attrs = append(attrs, fmt.Sprintf("Code: %s", *r.Code))
+	}
+	if len(r.Intents) > 0 {
+		attrs = append(attrs, fmt.Sprintf("Intents: %v", r.Intents))
+	}
+
+	return fmt.Sprintf("{%s}", strings.Join(attrs, ", "))
+}
+
+type IntentDetail struct {
+	ResponseError
+
+	Id          *string       `json:"id"`
+	Name        *string       `json:"name"`
+	Doc         *string       `json:"doc"`
+	Expressions []interface{} `json:"expressions"`
+	Entities    interface{}   `json:"entities"`
+}
+
+func (r IntentDetail) String() string {
+	attrs := []string{}
+	if r.Error != nil {
+		attrs = append(attrs, fmt.Sprintf("Error: %s", *r.Error))
+	}
+	if r.Code != nil {
+		attrs = append(attrs, fmt.Sprintf("Code: %s", *r.Code))
+	}
+	if r.Id != nil {
+		attrs = append(attrs, fmt.Sprintf("Id: %s", *r.Id))
+	}
+	if r.Name != nil {
+		attrs = append(attrs, fmt.Sprintf("Name: %s", *r.Name))
+	}
+	if r.Doc != nil {
+		attrs = append(attrs, fmt.Sprintf("Doc: %s", *r.Doc))
+	}
+	if len(r.Expressions) > 0 {
+		attrs = append(attrs, fmt.Sprintf("Expressions: %s", r.Expressions))
+	}
+	if r.Entities != nil {
+		attrs = append(attrs, fmt.Sprintf("Entities: %s", r.Entities))
+	}
+
+	return fmt.Sprintf("{%s}", strings.Join(attrs, ", "))
+}
+
+type IntentExpression struct {
+	IntentId *string `json:"intent_id,omitempty"`
+	Body     *string `json:"body,omitempty"`
+}
+
+func (i IntentExpression) String() string {
+	attrs := []string{}
+	if i.IntentId != nil {
+		attrs = append(attrs, fmt.Sprintf("IntentId: %s", *i.IntentId))
+	}
+	if i.Body != nil {
+		attrs = append(attrs, fmt.Sprintf("Body: %s", *i.Body))
+	}
+
+	return fmt.Sprintf("{%s}", strings.Join(attrs, ", "))
+}
+
+type IntentAttributes struct {
+	Id       *string `json:"id,omitempty"`
+	Name     *string `json:"name,omitempty"`
+	Metadata *string `json:"metadata,omitempty"`
+	Doc      *string `json:"doc,omitempty"`
+}
+
+func (i IntentAttributes) String() string {
+	attrs := []string{}
+	if i.Id != nil {
+		attrs = append(attrs, fmt.Sprintf("Id: %s", *i.Id))
+	}
+	if i.Name != nil {
+		attrs = append(attrs, fmt.Sprintf("Name: %s", *i.Name))
+	}
+	if i.Metadata != nil {
+		attrs = append(attrs, fmt.Sprintf("Metadata: %s", *i.Metadata))
+	}
+	if i.Doc != nil {
+		attrs = append(attrs, fmt.Sprintf("Doc: %s", *i.Doc))
+	}
+
+	return fmt.Sprintf("{%s}", strings.Join(attrs, ", "))
+}
+
+type Entity struct {
+	Id      *string       `json:"id"`
+	Name    *string       `json:"name"`
+	Doc     *string       `json:"doc"`
+	Lang    *string       `json:"lang"`
+	Closed  bool          `json:"closed"`
+	Exotic  bool          `json:"exotic"`
+	Builtin bool          `json:"builtin"`
+	Values  []EntityValue `json:"values"`
+}
+
+func (e Entity) String() string {
+	attrs := []string{}
+	if e.Id != nil {
+		attrs = append(attrs, fmt.Sprintf("Id: %s", *e.Id))
+	}
+	if e.Name != nil {
+		attrs = append(attrs, fmt.Sprintf("Name: %s", *e.Name))
+	}
+	if e.Doc != nil {
+		attrs = append(attrs, fmt.Sprintf("Doc: %s", *e.Doc))
+	}
+	if e.Lang != nil {
+		attrs = append(attrs, fmt.Sprintf("Lang: %s", *e.Lang))
+	}
+	attrs = append(attrs, fmt.Sprintf("Closed: %t", e.Closed))
+	attrs = append(attrs, fmt.Sprintf("Exotic: %t", e.Exotic))
+	attrs = append(attrs, fmt.Sprintf("Builtin: %t", e.Builtin))
+	if len(e.Values) > 0 {
+		attrs = append(attrs, fmt.Sprintf("Values: %v", e.Values))
+	}
+
+	return fmt.Sprintf("{%s}", strings.Join(attrs, ", "))
+}
+
+type EntityValue struct {
+	Expressions []string `json:"expression"`
+	Value       *string  `json:"value"`
+}
+
+func (e EntityValue) String() string {
+	attrs := []string{}
+	if len(e.Expressions) > 0 {
+		attrs = append(attrs, fmt.Sprintf("Expressions: %v", e.Expressions))
+	}
+	if e.Value != nil {
+		attrs = append(attrs, fmt.Sprintf("Doc: %s", *e.Value))
+	}
+
+	return fmt.Sprintf("{%s}", strings.Join(attrs, ", "))
 }
