@@ -384,7 +384,7 @@ func (c *Client) CreateIntentExpressions(intentId *string, expressions []string)
 // remove an expression from an intent
 //
 // https://wit.ai/docs/http/20160330#destroy-intent-expression-link
-func (c *Client) DeleteExpression(intentId *string, expressionId *string) (response map[string]string, err error) {
+func (c *Client) DeleteIntentExpression(intentId *string, expressionId *string) (response map[string]string, err error) {
 	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/intents/%s/expressions/%s", *intentId, *expressionId), nil)
 
 	var bytes []byte
