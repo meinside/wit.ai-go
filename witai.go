@@ -256,3 +256,92 @@ func (c *Client) CreateNewIntent(intents ...Intent) (response ResponseIntents, e
 
 	return response, err
 }
+
+// retrieve the list of all intents
+//
+// https://wit.ai/docs/http/20160330#intents-index-link
+func (c *Client) GetAllIntents() (response []map[string]interface{}, err error) {
+	url := c.makeUrl("https://api.wit.ai/intents", nil)
+
+	var bytes []byte
+	if bytes, err = c.request("GET", *url, nil); err == nil {
+		if err = json.Unmarshal(bytes, &response); err != nil {
+			err = fmt.Errorf("intent list parse error: %s", err)
+		}
+	} else {
+		err = fmt.Errorf("intent list request error: %s", err)
+	}
+
+	return response, err
+
+}
+
+// retrieve all entities and expressions of an intent
+//
+// https://wit.ai/docs/http/20160330#intent-show-link
+// TODO
+
+// update intent attributes
+//
+// https://wit.ai/docs/http/20160330#intent-put-link
+// TODO
+
+// add new expressions to an intent
+//
+// https://wit.ai/docs/http/20160330#create-intent-expressions-link
+// TODO
+
+// remove an expression from an intent
+//
+// https://wit.ai/docs/http/20160330#destroy-intent-expression-link
+// TODO
+
+// retrieve the list of all available entities
+//
+// https://wit.ai/docs/http/20160330#entities-index-link
+// TODO
+
+// create a new entity
+//
+// https://wit.ai/docs/http/20160330#entities-post-link
+// TODO
+
+// retrieve all values of an entity
+//
+// https://wit.ai/docs/http/20160330#entities-show-link
+// TODO
+
+// update the values of an entity
+//
+// https://wit.ai/docs/http/20160330#entities-put-link
+// TODO
+
+// delete an entity
+//
+// https://wit.ai/docs/http/20160330#entities-destroy-link
+// TODO
+
+// add a new value to an entity
+//
+// https://wit.ai/docs/http/20160330#create-entity-value-link
+// TODO
+
+// remove a given value from an entity
+//
+// https://wit.ai/docs/http/20160330#delete-entity-value-link
+// TODO
+
+// create a new expression for an entity
+//
+// https://wit.ai/docs/http/20160330#create-entity-expression-link
+// TODO
+
+// remove an expression from an entity
+//
+// https://wit.ai/docs/http/20160330#destroy-entity-expression-link
+// TODO
+
+// retrieve an existing message
+//
+// https://wit.ai/docs/http/20160330#get-message-link
+// TODO
