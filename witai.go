@@ -398,8 +398,21 @@ func (c *Client) DeleteExpression(intentId *string, expressionId *string) (respo
 //
 // https://wit.ai/docs/http/20160330#entities-index-link
 func (c *Client) GetAllEntities() (response []string, err error) {
-	// TODO
-	return nil, nil
+	url := c.makeUrl("https://api.wit.ai/entities", nil)
+
+	var bytes []byte
+	if bytes, err = c.request("GET", *url, nil); err == nil {
+		var entitiesRes []string
+		if err = json.Unmarshal(bytes, &entitiesRes); err == nil {
+			response = entitiesRes
+		} else {
+			err = fmt.Errorf("get all entities parse error: %s", err)
+		}
+	} else {
+		err = fmt.Errorf("get all entities request error: %s", err)
+	}
+
+	return response, err
 }
 
 // create a new entity
