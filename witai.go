@@ -153,7 +153,7 @@ func (c *Client) ConverseNext(sessionId string, context interface{}) (response C
 // get meaning of a sentence
 //
 // https://wit.ai/docs/http/20160330#get-intent-via-text-link
-func (c *Client) Message(query string, context interface{}, messageId, threadId string, n int) (response Message, err error) {
+func (c *Client) QueryMessage(query string, context interface{}, messageId, threadId string, n int) (response Message, err error) {
 	params := map[string]interface{}{
 		"q": query,
 	}
@@ -195,7 +195,7 @@ func (c *Client) Message(query string, context interface{}, messageId, threadId 
 // get meaning of audio (mp3 format)
 //
 // https://wit.ai/docs/http/20160330#get-intent-via-speech-link
-func (c *Client) SpeechMp3(filepath string, context interface{}, messageId, threadId string, n int) (response Message, err error) {
+func (c *Client) QuerySpeechMp3(filepath string, context interface{}, messageId, threadId string, n int) (response Message, err error) {
 	params := map[string]interface{}{}
 	if context != nil {
 		params["context"] = context
@@ -483,6 +483,23 @@ func (c *Client) DeleteEntityExpression(entityId *string, entityValue *string, e
 //
 // https://wit.ai/docs/http/20160330#get-message-link
 func (c *Client) GetMessage(messageId *string) (response Message, err error) {
-	// TODO
-	return Message{}, nil
+	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/messages/%s", *messageId), nil)
+
+	var bytes []byte
+	if bytes, err = c.request("GET", *url, nil); err == nil {
+		var msgRes Message
+		if err = json.Unmarshal(bytes, &msgRes); err == nil {
+			if msgRes.Error == nil {
+				response = msgRes
+			} else {
+				err = fmt.Errorf("get message response error: %s", *msgRes.Error)
+			}
+		} else {
+			err = fmt.Errorf("get message parse error: %s", err)
+		}
+	} else {
+		err = fmt.Errorf("get message request error: %s", err)
+	}
+
+	return response, err
 }
