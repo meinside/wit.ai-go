@@ -358,7 +358,7 @@ func (c *Client) UpdateIntentAttrs(intentId, name, doc, metadata *string) (respo
 // add new expressions to an intent
 //
 // https://wit.ai/docs/http/20160330#create-intent-expressions-link
-func (c *Client) CreateIntentExpressions(intentId *string, expressions []string) (response []IntentExpression, err error) {
+func (c *Client) CreateIntentExpressions(intentId *string, expressions []string) (response []IntentExpressionCreated, err error) {
 	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/intents/%s/expressions", *intentId), nil)
 
 	body := []interface{}{}
@@ -368,7 +368,7 @@ func (c *Client) CreateIntentExpressions(intentId *string, expressions []string)
 
 	var bytes []byte
 	if bytes, err = c.request("POST", *url, body); err == nil {
-		var intentRes []IntentExpression
+		var intentRes []IntentExpressionCreated
 		if err = json.Unmarshal(bytes, &intentRes); err == nil {
 			response = intentRes
 		} else {
