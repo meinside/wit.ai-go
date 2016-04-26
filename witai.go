@@ -17,91 +17,6 @@ const (
 	DefaultVersion = "20141022"
 )
 
-type Client struct {
-	Token   *string
-	Version *string
-
-	headerAuth   *string
-	headerAccept *string
-}
-
-// https://wit.ai/docs/http/20160330#response-format-link
-type ResponseError struct {
-	Error *string `json:"error,omitempty"`
-	Code  *string `json:"code,omitempty"`
-}
-
-// https://wit.ai/docs/http/20160330#converse-link
-type ResponseConverse struct {
-	ResponseError
-
-	Type       *string     `json:"type"`
-	Message    *string     `json:"msg,omitempty"`
-	Action     *string     `json:"action,omitempty"`
-	Entities   interface{} `json:"entities,omitempty"`
-	Confidence float32     `json:"confidence"`
-}
-
-func (r ResponseConverse) String() string {
-	return fmt.Sprintf("{Type: %s, Message: %s, Action: %s, Entities: %v, Confidence: %.6f}", *r.Type, *r.Message, *r.Action, r.Entities, r.Confidence)
-}
-
-// https://wit.ai/docs/http/20160330#context-link
-type Context struct {
-	State         interface{} `json:"state,omitempty"`
-	ReferenceTime *string     `json:"reference_time,omitempty"`
-	TimeZone      *string     `json:"timezone,omitempty"`
-	Entities      *Entities   `json:"entities,omitempty"`
-	Location      *Location   `json:"location,omitempty"`
-}
-
-func (c Context) String() string {
-	return fmt.Sprintf("{State: %v, ReferenceTime: %s, TimeZone: %s, Entities: %v, Location: %v}", c.State, *c.ReferenceTime, *c.TimeZone, c.Entities, c.Location)
-}
-
-type Entities struct {
-	Id     *string       `json:"id"`
-	Doc    *string       `json:"doc,omitempty"`
-	Values []interface{} `json:"values,omitempty"`
-}
-
-func (e Entities) String() string {
-	return fmt.Sprintf("{Id: %s, Doc: %s, Values: %v}", *e.Id, *e.Doc, e.Values)
-}
-
-type Location struct {
-	Latitude  float32 `json:"latitude"`
-	Longitude float32 `json:"longitude"`
-}
-
-func (l Location) String() string {
-	return fmt.Sprintf("{Latitude: %.6f, Longitude: %.6f}", l.Latitude, l.Longitude)
-}
-
-// https://wit.ai/docs/http/20160330#get-intent-via-text-link
-type ResponseMessage struct {
-	ResponseError
-
-	MessageId *string   `json:"msg_id"`
-	Text      *string   `json:"_text"`
-	Outcomes  []Outcome `json:"outcomes"`
-}
-
-func (r ResponseMessage) String() string {
-	return fmt.Sprintf("{MessageId: %s, Text: %s, Outcomes: %v}", *r.MessageId, *r.Text, r.Outcomes)
-}
-
-type Outcome struct {
-	Text       *string     `json:"_text"`
-	Intent     *string     `json:"intent"`
-	Entities   interface{} `json:"entities"`
-	Confidence int         `json:"confidence"`
-}
-
-func (o Outcome) String() string {
-	return fmt.Sprintf("{Text: %s, Intent: %s, Entities: %v, Confidence: %d}", *o.Text, *o.Intent, o.Entities, o.Confidence)
-}
-
 // new client with default version
 func NewClient(token *string) *Client {
 	version := DefaultVersion
@@ -188,8 +103,12 @@ func (c *Client) makeUrl(baseUrl string, params map[string]interface{}) *string 
 		index++
 	}
 
-	result := baseUrl + "?" + strings.Join(queries, "&")
-	return &result
+	url := baseUrl
+	if len(params) > 0 {
+		url = url + "?" + strings.Join(queries, "&")
+	}
+
+	return &url
 }
 
 // get next steps
@@ -301,6 +220,37 @@ func (c *Client) SpeechMp3(filepath string, context interface{}, messageId, thre
 			}
 		} else {
 			err = fmt.Errorf("speech parse error: %s", err)
+		}
+	}
+
+	return response, err
+}
+
+// create new intents
+//
+// https://wit.ai/docs/http/20160330#intents-post-link
+func (c *Client) CreateNewIntent(intents ...Intent) (response ResponseIntents, err error) {
+	var data interface{}
+
+	if len(intents) > 1 {
+		data = intents
+	} else {
+		data = intents[0]
+	}
+
+	url := c.makeUrl("https://api.wit.ai/intents", nil)
+
+	var bytes []byte
+	if bytes, err = c.request("POST", *url, data); err == nil {
+		var intentsRes ResponseIntents
+		if err = json.Unmarshal(bytes, &intentsRes); err == nil {
+			if intentsRes.Error == nil {
+				response = intentsRes
+			} else {
+				err = fmt.Errorf("new intents request error: %s", *intentsRes.Error)
+			}
+		} else {
+			err = fmt.Errorf("new intents parse error: %s", err)
 		}
 	}
 
