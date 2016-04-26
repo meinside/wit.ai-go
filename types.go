@@ -299,6 +299,8 @@ func (i IntentExpression) String() string {
 }
 
 type IntentAttributes struct {
+	ResponseError
+
 	Id       *string `json:"id,omitempty"`
 	Name     *string `json:"name,omitempty"`
 	Metadata *string `json:"metadata,omitempty"`
@@ -307,6 +309,12 @@ type IntentAttributes struct {
 
 func (i IntentAttributes) String() string {
 	attrs := []string{}
+	if i.Error != nil {
+		attrs = append(attrs, fmt.Sprintf("Error: %s", *i.Error))
+	}
+	if i.Code != nil {
+		attrs = append(attrs, fmt.Sprintf("Code: %s", *i.Code))
+	}
 	if i.Id != nil {
 		attrs = append(attrs, fmt.Sprintf("Id: %s", *i.Id))
 	}

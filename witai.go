@@ -314,9 +314,37 @@ func (c *Client) ShowIntent(intentId *string) (response IntentDetail, err error)
 // update intent attributes
 //
 // https://wit.ai/docs/http/20160330#intent-put-link
-func (c *Client) UpdateIntent(intentId *string) (response IntentAttributes, err error) {
-	// TODO
-	return IntentAttributes{}, nil
+func (c *Client) UpdateIntentAttrs(intentId, name, doc, metadata *string) (response IntentAttributes, err error) {
+	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/intents/%s", *intentId), nil)
+
+	body := map[string]interface{}{}
+	if name != nil {
+		body["name"] = *name
+	}
+	if doc != nil {
+		body["doc"] = *doc
+	}
+	if metadata != nil {
+		body["metadata"] = *metadata
+	}
+
+	var bytes []byte
+	if bytes, err = c.request("PUT", *url, body); err == nil {
+		var intentRes IntentAttributes
+		if err = json.Unmarshal(bytes, &intentRes); err == nil {
+			if intentRes.Error == nil {
+				response = intentRes
+			} else {
+				err = fmt.Errorf("update intent attrs response error: %s", *intentRes.Error)
+			}
+		} else {
+			err = fmt.Errorf("update intent attrs parse error: %s", err)
+		}
+	} else {
+		err = fmt.Errorf("update intent attrs request error: %s", err)
+	}
+
+	return response, err
 }
 
 // add new expressions to an intent
