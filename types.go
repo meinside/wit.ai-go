@@ -13,6 +13,8 @@ type Client struct {
 
 	headerAuth   *string
 	headerAccept *string
+
+	Verbose bool
 }
 
 // https://wit.ai/docs/http/20160330#response-format-link

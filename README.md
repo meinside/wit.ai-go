@@ -27,6 +27,8 @@ func main() {
 	token := Token
 	c := witai.NewClient(&token)
 
+	c.Verbose = true	// for verbose messages
+
 	// message
 	if result, err := c.Message("how's the weather today?", nil, "", "", 1); err == nil {
 		fmt.Printf("message result = %+v\n", result)

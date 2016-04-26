@@ -40,6 +40,10 @@ func NewClientWithVersion(token, version *string) *Client {
 func (c *Client) request(method, url string, body interface{}) (res []byte, err error) {
 	var data []byte
 	if data, err = json.Marshal(body); err == nil {
+		if c.Verbose {
+			log.Printf("< HTTP request: %s %s, %s\n", method, url, string(data))
+		}
+
 		var req *http.Request
 		if req, err = http.NewRequest(method, url, bytes.NewBuffer(data)); err == nil {
 			// headers
@@ -53,6 +57,10 @@ func (c *Client) request(method, url string, body interface{}) (res []byte, err 
 				defer resp.Body.Close()
 
 				res, _ = ioutil.ReadAll(resp.Body)
+
+				if c.Verbose {
+					log.Printf("> HTTP response: %s\n", string(res))
+				}
 			} else {
 				log.Printf("Error while sending request: %s\n", err.Error())
 			}
