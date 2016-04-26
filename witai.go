@@ -478,9 +478,34 @@ func (c *Client) ShowEntity(entityId *string) (response Entity, err error) {
 // update the values of an entity
 //
 // https://wit.ai/docs/http/20160330#entities-put-link
-func (c *Client) UpdateEntity(entityId *string, doc *string, values []interface{}) (response Entity, err error) {
-	// TODO
-	return Entity{}, nil
+func (c *Client) UpdateEntity(entityId *string, doc *string, values []EntityValue) (response Entity, err error) {
+	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/entities/%s", *entityId), nil)
+
+	body := map[string]interface{}{}
+	if doc != nil {
+		body["doc"] = *doc
+	}
+	if len(values) > 0 {
+		body["values"] = values
+	}
+
+	var bytes []byte
+	if bytes, err = c.request("PUT", *url, body); err == nil {
+		var entityRes Entity
+		if err = json.Unmarshal(bytes, &entityRes); err == nil {
+			if entityRes.Error == nil {
+				response = entityRes
+			} else {
+				err = fmt.Errorf("update entity response error: %s", *entityRes.Error)
+			}
+		} else {
+			err = fmt.Errorf("update entity parse error: %s", err)
+		}
+	} else {
+		err = fmt.Errorf("update entity request error: %s", err)
+	}
+
+	return response, err
 }
 
 // delete an entity
