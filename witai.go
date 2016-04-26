@@ -617,9 +617,22 @@ func (c *Client) CreateEntityExpression(entityId *string, entityValue *string, e
 // remove an expression from an entity
 //
 // https://wit.ai/docs/http/20160330#destroy-entity-expression-link
-func (c *Client) DeleteEntityExpression(entityId *string, entityValue *string, expressionValue *string) (response interface{}, err error) {
-	// TODO
-	return nil, nil
+func (c *Client) DeleteEntityExpression(entityId *string, entityValue *string, expression *string) (response map[string]string, err error) {
+	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/entities/%s/values/%s/expressions/%s", *entityId, *entityValue, *expression), nil)
+
+	var bytes []byte
+	if bytes, err = c.request("DELETE", *url, nil); err == nil {
+		var entityRes map[string]string
+		if err = json.Unmarshal(bytes, &entityRes); err == nil {
+			response = entityRes
+		} else {
+			err = fmt.Errorf("delete entity expression parse error: %s", err)
+		}
+	} else {
+		err = fmt.Errorf("delete entity expression request error: %s", err)
+	}
+
+	return response, err
 }
 
 // retrieve an existing message
