@@ -454,8 +454,25 @@ func (c *Client) CreateNewEntity(id *string, doc *string, values []EntityValue) 
 //
 // https://wit.ai/docs/http/20160330#entities-show-link
 func (c *Client) ShowEntity(entityId *string) (response Entity, err error) {
-	// TODO
-	return Entity{}, nil
+	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/entities/%s", *entityId), nil)
+
+	var bytes []byte
+	if bytes, err = c.request("GET", *url, nil); err == nil {
+		var entityRes Entity
+		if err = json.Unmarshal(bytes, &entityRes); err == nil {
+			if entityRes.Error == nil {
+				response = entityRes
+			} else {
+				err = fmt.Errorf("show entity response error: %s", *entityRes.Error)
+			}
+		} else {
+			err = fmt.Errorf("show entity parse error: %s", err)
+		}
+	} else {
+		err = fmt.Errorf("show entity request error: %s", err)
+	}
+
+	return response, err
 }
 
 // update the values of an entity
