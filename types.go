@@ -32,24 +32,24 @@ type Converse struct {
 	Confidence float32                `json:"confidence"`
 }
 
-func (r Converse) String() string {
+func (c Converse) String() string {
 	attrs := []string{}
-	if r.Error != nil {
-		attrs = append(attrs, fmt.Sprintf("Error: %s", *r.Error))
+	if c.Error != nil {
+		attrs = append(attrs, fmt.Sprintf("Error: %s", *c.Error))
 	}
-	if r.Code != nil {
-		attrs = append(attrs, fmt.Sprintf("Code: %s", *r.Code))
+	if c.Code != nil {
+		attrs = append(attrs, fmt.Sprintf("Code: %s", *c.Code))
 	}
-	if r.Type != nil {
-		attrs = append(attrs, fmt.Sprintf("Type: %s", *r.Type))
+	if c.Type != nil {
+		attrs = append(attrs, fmt.Sprintf("Type: %s", *c.Type))
 	}
-	if r.Message != nil {
-		attrs = append(attrs, fmt.Sprintf("Message: %s", *r.Message))
+	if c.Message != nil {
+		attrs = append(attrs, fmt.Sprintf("Message: %s", *c.Message))
 	}
-	if r.Entities != nil {
-		attrs = append(attrs, fmt.Sprintf("Entities: %v", r.Entities))
+	if c.Entities != nil {
+		attrs = append(attrs, fmt.Sprintf("Entities: %v", c.Entities))
 	}
-	attrs = append(attrs, fmt.Sprintf("Confidence: %.6f", r.Confidence))
+	attrs = append(attrs, fmt.Sprintf("Confidence: %.6f", c.Confidence))
 
 	return fmt.Sprintf("{%s}", strings.Join(attrs, ", "))
 }
@@ -121,22 +121,22 @@ type Message struct {
 	Outcomes  []Outcome `json:"outcomes"`
 }
 
-func (r Message) String() string {
+func (m Message) String() string {
 	attrs := []string{}
-	if r.Error != nil {
-		attrs = append(attrs, fmt.Sprintf("Error: %s", *r.Error))
+	if m.Error != nil {
+		attrs = append(attrs, fmt.Sprintf("Error: %s", *m.Error))
 	}
-	if r.Code != nil {
-		attrs = append(attrs, fmt.Sprintf("Code: %s", *r.Code))
+	if m.Code != nil {
+		attrs = append(attrs, fmt.Sprintf("Code: %s", *m.Code))
 	}
-	if r.MessageId != nil {
-		attrs = append(attrs, fmt.Sprintf("MessageId: %s", *r.MessageId))
+	if m.MessageId != nil {
+		attrs = append(attrs, fmt.Sprintf("MessageId: %s", *m.MessageId))
 	}
-	if r.Text != nil {
-		attrs = append(attrs, fmt.Sprintf("Text: %s", *r.Text))
+	if m.Text != nil {
+		attrs = append(attrs, fmt.Sprintf("Text: %s", *m.Text))
 	}
-	if len(r.Outcomes) > 0 {
-		attrs = append(attrs, fmt.Sprintf("Outcomes: %v", r.Outcomes))
+	if len(m.Outcomes) > 0 {
+		attrs = append(attrs, fmt.Sprintf("Outcomes: %v", m.Outcomes))
 	}
 
 	return fmt.Sprintf("{%s}", strings.Join(attrs, ", "))
@@ -212,16 +212,16 @@ type Intents struct {
 	Intents []Intent `json:"intents"`
 }
 
-func (r Intents) String() string {
+func (i Intents) String() string {
 	attrs := []string{}
-	if r.Error != nil {
-		attrs = append(attrs, fmt.Sprintf("Error: %s", *r.Error))
+	if i.Error != nil {
+		attrs = append(attrs, fmt.Sprintf("Error: %s", *i.Error))
 	}
-	if r.Code != nil {
-		attrs = append(attrs, fmt.Sprintf("Code: %s", *r.Code))
+	if i.Code != nil {
+		attrs = append(attrs, fmt.Sprintf("Code: %s", *i.Code))
 	}
-	if len(r.Intents) > 0 {
-		attrs = append(attrs, fmt.Sprintf("Intents: %v", r.Intents))
+	if len(i.Intents) > 0 {
+		attrs = append(attrs, fmt.Sprintf("Intents: %v", i.Intents))
 	}
 
 	return fmt.Sprintf("{%s}", strings.Join(attrs, ", "))
@@ -230,35 +230,52 @@ func (r Intents) String() string {
 type IntentDetail struct {
 	ResponseError
 
-	Id          *string       `json:"id"`
-	Name        *string       `json:"name"`
-	Doc         *string       `json:"doc"`
-	Expressions []interface{} `json:"expressions"`
-	Entities    interface{}   `json:"entities"`
+	Id          *string                  `json:"id"`
+	Name        *string                  `json:"name"`
+	Doc         *string                  `json:"doc"`
+	Expressions []IntentDetailExpression `json:"expressions"`
+	Entities    []interface{}            `json:"entities"`
 }
 
-func (r IntentDetail) String() string {
+type IntentDetailExpression struct {
+	Id   *string `json:"id,omitempty"`
+	Body *string `json:"body,omitempty"`
+}
+
+func (i IntentDetail) String() string {
 	attrs := []string{}
-	if r.Error != nil {
-		attrs = append(attrs, fmt.Sprintf("Error: %s", *r.Error))
+	if i.Error != nil {
+		attrs = append(attrs, fmt.Sprintf("Error: %s", *i.Error))
 	}
-	if r.Code != nil {
-		attrs = append(attrs, fmt.Sprintf("Code: %s", *r.Code))
+	if i.Code != nil {
+		attrs = append(attrs, fmt.Sprintf("Code: %s", *i.Code))
 	}
-	if r.Id != nil {
-		attrs = append(attrs, fmt.Sprintf("Id: %s", *r.Id))
+	if i.Id != nil {
+		attrs = append(attrs, fmt.Sprintf("Id: %s", *i.Id))
 	}
-	if r.Name != nil {
-		attrs = append(attrs, fmt.Sprintf("Name: %s", *r.Name))
+	if i.Name != nil {
+		attrs = append(attrs, fmt.Sprintf("Name: %s", *i.Name))
 	}
-	if r.Doc != nil {
-		attrs = append(attrs, fmt.Sprintf("Doc: %s", *r.Doc))
+	if i.Doc != nil {
+		attrs = append(attrs, fmt.Sprintf("Doc: %s", *i.Doc))
 	}
-	if len(r.Expressions) > 0 {
-		attrs = append(attrs, fmt.Sprintf("Expressions: %s", r.Expressions))
+	if len(i.Expressions) > 0 {
+		attrs = append(attrs, fmt.Sprintf("Expressions: %s", i.Expressions))
 	}
-	if r.Entities != nil {
-		attrs = append(attrs, fmt.Sprintf("Entities: %s", r.Entities))
+	if i.Entities != nil {
+		attrs = append(attrs, fmt.Sprintf("Entities: %s", i.Entities))
+	}
+
+	return fmt.Sprintf("{%s}", strings.Join(attrs, ", "))
+}
+
+func (i IntentDetailExpression) String() string {
+	attrs := []string{}
+	if i.Id != nil {
+		attrs = append(attrs, fmt.Sprintf("Id: %s", *i.Id))
+	}
+	if i.Body != nil {
+		attrs = append(attrs, fmt.Sprintf("Body: %s", *i.Body))
 	}
 
 	return fmt.Sprintf("{%s}", strings.Join(attrs, ", "))

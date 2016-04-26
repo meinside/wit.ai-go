@@ -284,15 +284,31 @@ func (c *Client) GetAllIntents() (response []Intent, err error) {
 	}
 
 	return response, err
-
 }
 
 // retrieve all entities and expressions of an intent
 //
 // https://wit.ai/docs/http/20160330#intent-show-link
 func (c *Client) ShowIntent(intentId *string) (response IntentDetail, err error) {
-	// TODO
-	return IntentDetail{}, nil
+	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/intents/%s", *intentId), nil)
+
+	var bytes []byte
+	if bytes, err = c.request("GET", *url, nil); err == nil {
+		var intentRes IntentDetail
+		if err = json.Unmarshal(bytes, &intentRes); err == nil {
+			if intentRes.Error == nil {
+				response = intentRes
+			} else {
+				err = fmt.Errorf("show intent response error: %s", *intentRes.Error)
+			}
+		} else {
+			err = fmt.Errorf("show intent parse error: %s", err)
+		}
+	} else {
+		err = fmt.Errorf("show intent request error: %s", err)
+	}
+
+	return response, err
 }
 
 // update intent attributes
@@ -310,8 +326,6 @@ func (c *Client) CreateIntentExpressions(intentId *string, expressions []interfa
 	// TODO
 	return []IntentExpression{}, nil
 }
-
-// TODO
 
 // remove an expression from an intent
 //
