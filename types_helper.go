@@ -22,6 +22,9 @@ func (c Converse) String() string {
 	if c.Message != nil {
 		attrs = append(attrs, fmt.Sprintf("Message: %s", *c.Message))
 	}
+	if c.Action != nil {
+		attrs = append(attrs, fmt.Sprintf("Action: %s", *c.Action))
+	}
 	if c.Entities != nil {
 		attrs = append(attrs, fmt.Sprintf("Entities: %v", c.Entities))
 	}
