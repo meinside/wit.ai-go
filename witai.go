@@ -358,7 +358,7 @@ func (c *Client) UpdateIntentAttrs(intentId, name, doc, metadata *string) (respo
 // add new expressions to an intent
 //
 // https://wit.ai/docs/http/20160330#create-intent-expressions-link
-func (c *Client) CreateIntentExpressions(intentId *string, expressions []string) (response []IntentExpressionCreated, err error) {
+func (c *Client) CreateIntentExpressions(intentId *string, expressions ...string) (response []IntentExpressionCreated, err error) {
 	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/intents/%s/expressions", *intentId), nil)
 
 	body := []interface{}{}
@@ -426,7 +426,7 @@ func (c *Client) GetAllEntities() (response []string, err error) {
 // create a new entity
 //
 // https://wit.ai/docs/http/20160330#entities-post-link
-func (c *Client) CreateNewEntity(id *string, doc *string, values []EntityValue) (response Entity, err error) {
+func (c *Client) CreateNewEntity(id *string, doc *string, values ...EntityValue) (response Entity, err error) {
 	url := c.makeUrl("https://api.wit.ai/entities", nil)
 
 	data := map[string]interface{}{
@@ -436,7 +436,7 @@ func (c *Client) CreateNewEntity(id *string, doc *string, values []EntityValue) 
 		data["doc"] = *doc
 	}
 	if len(values) > 0 {
-		data["values"] = values
+		data["values"] = append([]EntityValue{}, values...)
 	}
 
 	var bytes []byte
@@ -486,7 +486,7 @@ func (c *Client) ShowEntity(entityId *string) (response Entity, err error) {
 // update the values of an entity
 //
 // https://wit.ai/docs/http/20160330#entities-put-link
-func (c *Client) UpdateEntity(entityId *string, doc *string, values []EntityValue) (response Entity, err error) {
+func (c *Client) UpdateEntity(entityId *string, doc *string, values ...EntityValue) (response Entity, err error) {
 	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/entities/%s", *entityId), nil)
 
 	body := map[string]interface{}{}
@@ -494,7 +494,7 @@ func (c *Client) UpdateEntity(entityId *string, doc *string, values []EntityValu
 		body["doc"] = *doc
 	}
 	if len(values) > 0 {
-		body["values"] = values
+		body["values"] = append([]EntityValue{}, values...)
 	}
 
 	var bytes []byte
