@@ -27,20 +27,21 @@ func main() {
 	token := Token
 	c := witai.NewClient(&token)
 
+	//c.Verbose = false
 	c.Verbose = true	// for verbose messages
 
 	// message
-	if result, err := c.Message("how's the weather today?", nil, "", "", 1); err == nil {
-		fmt.Printf("message result = %+v\n", result)
+	if result, err := c.QueryMessage("how's the weather today?", nil, "", "", 1); err == nil {
+		fmt.Printf("query message result = %+v\n", result)
 	} else {
-		fmt.Printf("message error = %s\n", err)
+		fmt.Printf("query message error = %s\n", err)
 	}
 
 	// speech
-	if result, err := c.SpeechMp3("/some/path/test_voice.mp3", nil, "", "", 1); err == nil {
-		fmt.Printf("speech result = %+v\n", result)
+	if result, err := c.QuerySpeechMp3("/some/where/test_voice.mp3", nil, "", "", 1); err == nil {
+		fmt.Printf("query speech result = %+v\n", result)
 	} else {
-		fmt.Printf("speech error = %s\n", err)
+		fmt.Printf("query speech error = %s\n", err)
 	}
 }
 ```
