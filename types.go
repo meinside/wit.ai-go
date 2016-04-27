@@ -76,12 +76,16 @@ type Intent struct {
 	Doc         *string            `json:"doc,omitempty"`
 	Metadata    *string            `json:"metadata,omitempty"`
 	Expressions []IntentExpression `json:"expressions,omitempty"`
-	Meta        interface{}        `json:"meta,omitempty"`
+	Meta        *IntentMeta        `json:"meta,omitempty"`
 }
 
 type IntentExpression struct {
 	Id   *string `json:"id,omitempty"`
 	Body *string `json:"body,omitempty"`
+}
+
+type IntentMeta struct {
+	States []string `json:"states,omitempty"`
 }
 
 type Intents struct {
