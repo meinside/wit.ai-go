@@ -65,6 +65,7 @@ type Outcome struct {
 	Confidence float32                `json:"confidence"`
 }
 
+// https://wit.ai/docs/http/20160330#intents-post-link
 type Intent struct {
 	ResponseError
 
@@ -107,6 +108,7 @@ type IntentExpressionCreated struct {
 	Body     *string `json:"body,omitempty"`
 }
 
+// https://wit.ai/docs/http/20160330#intent-put-link
 type IntentAttributes struct {
 	ResponseError
 
@@ -116,6 +118,7 @@ type IntentAttributes struct {
 	Doc      *string `json:"doc,omitempty"`
 }
 
+// https://wit.ai/docs/http/20160330#entities-post-link
 type Entity struct {
 	ResponseError
 
