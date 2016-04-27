@@ -297,8 +297,8 @@ func (c *Client) GetAllIntents() (response []Intent, err error) {
 // retrieve all entities and expressions of an intent
 //
 // https://wit.ai/docs/http/20160330#intent-show-link
-func (c *Client) ShowIntent(intentId *string) (response IntentDetail, err error) {
-	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/intents/%s", *intentId), nil)
+func (c *Client) ShowIntent(intentIdOrName *string) (response IntentDetail, err error) {
+	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/intents/%s", *intentIdOrName), nil)
 
 	var bytes []byte
 	if bytes, err = c.request("GET", *url, nil); err == nil {
@@ -322,8 +322,8 @@ func (c *Client) ShowIntent(intentId *string) (response IntentDetail, err error)
 // update intent attributes
 //
 // https://wit.ai/docs/http/20160330#intent-put-link
-func (c *Client) UpdateIntentAttrs(intentId, name, doc, metadata *string) (response IntentAttributes, err error) {
-	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/intents/%s", *intentId), nil)
+func (c *Client) UpdateIntentAttrs(intentIdOrName, name, doc, metadata *string) (response IntentAttributes, err error) {
+	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/intents/%s", *intentIdOrName), nil)
 
 	body := map[string]interface{}{}
 	if name != nil {
@@ -358,8 +358,8 @@ func (c *Client) UpdateIntentAttrs(intentId, name, doc, metadata *string) (respo
 // add new expressions to an intent
 //
 // https://wit.ai/docs/http/20160330#create-intent-expressions-link
-func (c *Client) CreateIntentExpressions(intentId *string, expressions ...string) (response []IntentExpressionCreated, err error) {
-	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/intents/%s/expressions", *intentId), nil)
+func (c *Client) CreateIntentExpressions(intentIdOrName *string, expressions ...string) (response []IntentExpressionCreated, err error) {
+	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/intents/%s/expressions", *intentIdOrName), nil)
 
 	body := []interface{}{}
 	for _, expression := range expressions {
@@ -384,8 +384,8 @@ func (c *Client) CreateIntentExpressions(intentId *string, expressions ...string
 // remove an expression from an intent
 //
 // https://wit.ai/docs/http/20160330#destroy-intent-expression-link
-func (c *Client) DeleteIntentExpression(intentId *string, expressionId *string) (response map[string]string, err error) {
-	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/intents/%s/expressions/%s", *intentId, *expressionId), nil)
+func (c *Client) DeleteIntentExpression(intentIdOrName *string, expressionId *string) (response map[string]string, err error) {
+	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/intents/%s/expressions/%s", *intentIdOrName, *expressionId), nil)
 
 	var bytes []byte
 	if bytes, err = c.request("DELETE", *url, nil); err == nil {
@@ -426,11 +426,11 @@ func (c *Client) GetAllEntities() (response []string, err error) {
 // create a new entity
 //
 // https://wit.ai/docs/http/20160330#entities-post-link
-func (c *Client) CreateNewEntity(id *string, doc *string, values ...EntityValue) (response Entity, err error) {
+func (c *Client) CreateNewEntity(idOrName *string, doc *string, values ...EntityValue) (response Entity, err error) {
 	url := c.makeUrl("https://api.wit.ai/entities", nil)
 
 	data := map[string]interface{}{
-		"id": *id,
+		"id": *idOrName,
 	}
 	if doc != nil {
 		data["doc"] = *doc
