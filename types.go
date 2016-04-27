@@ -14,8 +14,10 @@ type Client struct {
 
 // https://wit.ai/docs/http/20160330#response-format-link
 type ResponseError struct {
-	Error *string `json:"error,omitempty"`
-	Code  *string `json:"code,omitempty"`
+	Error  *string  `json:"error,omitempty"`
+	Errors []string `json:"errors,omitempty"`
+	Body   *string  `json:"body,omitempty"`
+	Code   *string  `json:"code,omitempty"`
 }
 
 // https://wit.ai/docs/http/20160330#converse-link

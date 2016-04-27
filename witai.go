@@ -139,10 +139,10 @@ func (c *Client) ConverseFirst(sessionId, query string, context interface{}) (re
 	if bytes, err = c.request("POST", *url, context); err == nil {
 		var converseRes Converse
 		if err = json.Unmarshal(bytes, &converseRes); err == nil {
-			if converseRes.Error == nil {
+			if !converseRes.HasError() {
 				response = converseRes
 			} else {
-				err = fmt.Errorf("converse response error: %s", *converseRes.Error)
+				err = fmt.Errorf("converse response error: %s", converseRes.ErrorMessage())
 			}
 		} else {
 			err = fmt.Errorf("converse parse error: %s", err)
@@ -185,10 +185,10 @@ func (c *Client) QueryMessage(query string, context interface{}, messageId, thre
 	if bytes, err = c.request("GET", *url, context); err == nil {
 		var msgRes Message
 		if err = json.Unmarshal(bytes, &msgRes); err == nil {
-			if msgRes.Error == nil {
+			if !msgRes.HasError() {
 				response = msgRes
 			} else {
-				err = fmt.Errorf("message response error: %s", *msgRes.Error)
+				err = fmt.Errorf("message response error: %s", msgRes.ErrorMessage())
 			}
 		} else {
 			err = fmt.Errorf("message parse error: %s", err)
@@ -225,10 +225,10 @@ func (c *Client) QuerySpeechMp3(filepath string, context interface{}, messageId,
 	if bytes, err = c.upload("POST", *url, filepath, "audio/mpeg3"); err == nil {
 		var speechRes Message
 		if err = json.Unmarshal(bytes, &speechRes); err == nil {
-			if speechRes.Error == nil {
+			if !speechRes.HasError() {
 				response = speechRes
 			} else {
-				err = fmt.Errorf("speech response error: %s", *speechRes.Error)
+				err = fmt.Errorf("speech response error: %s", speechRes.ErrorMessage())
 			}
 		} else {
 			err = fmt.Errorf("speech parse error: %s", err)
@@ -258,10 +258,10 @@ func (c *Client) CreateIntent(intents ...Intent) (response Intents, err error) {
 	if bytes, err = c.request("POST", *url, data); err == nil {
 		var intentsRes Intents
 		if err = json.Unmarshal(bytes, &intentsRes); err == nil {
-			if intentsRes.Error == nil {
+			if !intentsRes.HasError() {
 				response = intentsRes
 			} else {
-				err = fmt.Errorf("new intents response error: %s", *intentsRes.Error)
+				err = fmt.Errorf("new intents response error: %s", intentsRes.ErrorMessage())
 			}
 		} else {
 			err = fmt.Errorf("new intents parse error: %s", err)
@@ -304,10 +304,10 @@ func (c *Client) ShowIntent(intentIdOrName *string) (response IntentDetail, err 
 	if bytes, err = c.request("GET", *url, nil); err == nil {
 		var intentRes IntentDetail
 		if err = json.Unmarshal(bytes, &intentRes); err == nil {
-			if intentRes.Error == nil {
+			if !intentRes.HasError() {
 				response = intentRes
 			} else {
-				err = fmt.Errorf("show intent response error: %s", *intentRes.Error)
+				err = fmt.Errorf("show intent response error: %s", intentRes.ErrorMessage())
 			}
 		} else {
 			err = fmt.Errorf("show intent parse error: %s", err)
@@ -340,10 +340,10 @@ func (c *Client) UpdateIntentAttrs(intentIdOrName, name, doc, metadata *string) 
 	if bytes, err = c.request("PUT", *url, body); err == nil {
 		var intentRes IntentAttributes
 		if err = json.Unmarshal(bytes, &intentRes); err == nil {
-			if intentRes.Error == nil {
+			if !intentRes.HasError() {
 				response = intentRes
 			} else {
-				err = fmt.Errorf("update intent attrs response error: %s", *intentRes.Error)
+				err = fmt.Errorf("update intent attrs response error: %s", intentRes.ErrorMessage())
 			}
 		} else {
 			err = fmt.Errorf("update intent attrs parse error: %s", err)
@@ -443,10 +443,10 @@ func (c *Client) CreateEntity(idOrName, doc *string, values ...EntityValue) (res
 	if bytes, err = c.request("POST", *url, data); err == nil {
 		var entityRes Entity
 		if err = json.Unmarshal(bytes, &entityRes); err == nil {
-			if entityRes.Error == nil {
+			if !entityRes.HasError() {
 				response = entityRes
 			} else {
-				err = fmt.Errorf("new entity response error: %s", *entityRes.Error)
+				err = fmt.Errorf("new entity response error: %s", entityRes.ErrorMessage())
 			}
 		} else {
 			err = fmt.Errorf("new entity parse error: %s", err)
@@ -468,10 +468,10 @@ func (c *Client) ShowEntity(entityId *string) (response Entity, err error) {
 	if bytes, err = c.request("GET", *url, nil); err == nil {
 		var entityRes Entity
 		if err = json.Unmarshal(bytes, &entityRes); err == nil {
-			if entityRes.Error == nil {
+			if !entityRes.HasError() {
 				response = entityRes
 			} else {
-				err = fmt.Errorf("show entity response error: %s", *entityRes.Error)
+				err = fmt.Errorf("show entity response error: %s", entityRes.ErrorMessage())
 			}
 		} else {
 			err = fmt.Errorf("show entity parse error: %s", err)
@@ -501,10 +501,10 @@ func (c *Client) UpdateEntity(entityId, doc *string, values ...EntityValue) (res
 	if bytes, err = c.request("PUT", *url, body); err == nil {
 		var entityRes Entity
 		if err = json.Unmarshal(bytes, &entityRes); err == nil {
-			if entityRes.Error == nil {
+			if !entityRes.HasError() {
 				response = entityRes
 			} else {
-				err = fmt.Errorf("update entity response error: %s", *entityRes.Error)
+				err = fmt.Errorf("update entity response error: %s", entityRes.ErrorMessage())
 			}
 		} else {
 			err = fmt.Errorf("update entity parse error: %s", err)
@@ -557,10 +557,10 @@ func (c *Client) CreateEntityValue(entityId, value *string, expressions []string
 	if bytes, err = c.request("POST", *url, body); err == nil {
 		var entityRes Entity
 		if err = json.Unmarshal(bytes, &entityRes); err == nil {
-			if entityRes.Error == nil {
+			if !entityRes.HasError() {
 				response = entityRes
 			} else {
-				err = fmt.Errorf("create entity value response error: %s", *entityRes.Error)
+				err = fmt.Errorf("create entity value response error: %s", entityRes.ErrorMessage())
 			}
 		} else {
 			err = fmt.Errorf("create entity value parse error: %s", err)
@@ -607,10 +607,10 @@ func (c *Client) CreateEntityExpression(entityId, entityValue, expression *strin
 	if bytes, err = c.request("POST", *url, body); err == nil {
 		var entityRes Entity
 		if err = json.Unmarshal(bytes, &entityRes); err == nil {
-			if entityRes.Error == nil {
+			if !entityRes.HasError() {
 				response = entityRes
 			} else {
-				err = fmt.Errorf("create entity expression response error: %s", *entityRes.Error)
+				err = fmt.Errorf("create entity expression response error: %s", entityRes.ErrorMessage())
 			}
 		} else {
 			err = fmt.Errorf("create entity expression parse error: %s", err)
@@ -653,10 +653,10 @@ func (c *Client) GetMessage(messageId *string) (response Message, err error) {
 	if bytes, err = c.request("GET", *url, nil); err == nil {
 		var msgRes Message
 		if err = json.Unmarshal(bytes, &msgRes); err == nil {
-			if msgRes.Error == nil {
+			if !msgRes.HasError() {
 				response = msgRes
 			} else {
-				err = fmt.Errorf("get message response error: %s", *msgRes.Error)
+				err = fmt.Errorf("get message response error: %s", msgRes.ErrorMessage())
 			}
 		} else {
 			err = fmt.Errorf("get message parse error: %s", err)

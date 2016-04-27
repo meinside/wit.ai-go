@@ -283,6 +283,24 @@ func (e EntityValue) String() string {
 
 // helper functions
 
+func (r ResponseError) HasError() bool { // XXX - due to inconsistency in response formats
+	if r.Error != nil || len(r.Errors) > 0 || r.Body != nil {
+		return true
+	}
+	return false
+}
+
+func (r ResponseError) ErrorMessage() string { // XXX - due to inconsistency in response formats
+	errors := append([]string{}, r.Errors...)
+	if r.Error != nil {
+		errors = append(errors, *r.Error)
+	}
+	if r.Body != nil {
+		errors = append(errors, *r.Body)
+	}
+	return strings.Join(errors, ",")
+}
+
 func NewIntentExpression(body string) IntentExpression {
 	return IntentExpression{
 		Body: &body,
