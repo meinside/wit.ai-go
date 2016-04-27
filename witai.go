@@ -243,7 +243,7 @@ func (c *Client) QuerySpeechMp3(filepath string, context interface{}, messageId,
 // create new intents
 //
 // https://wit.ai/docs/http/20160330#intents-post-link
-func (c *Client) CreateNewIntent(intents ...Intent) (response Intents, err error) {
+func (c *Client) CreateIntent(intents ...Intent) (response Intents, err error) {
 	var data interface{}
 
 	if len(intents) > 1 {
@@ -426,7 +426,7 @@ func (c *Client) GetAllEntities() (response []string, err error) {
 // create a new entity
 //
 // https://wit.ai/docs/http/20160330#entities-post-link
-func (c *Client) CreateNewEntity(idOrName, doc *string, values ...EntityValue) (response Entity, err error) {
+func (c *Client) CreateEntity(idOrName, doc *string, values ...EntityValue) (response Entity, err error) {
 	url := c.makeUrl("https://api.wit.ai/entities", nil)
 
 	data := map[string]interface{}{
