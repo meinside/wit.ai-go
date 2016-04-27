@@ -166,6 +166,29 @@ func (c *Client) ConverseNext(sessionId string, context interface{}) (response C
 	return c.ConverseFirst(sessionId, "", context)
 }
 
+func (c *Client) ConverseAll(sessionId, query string, context interface{}) (responses []Converse, err error) {
+	if result, err := c.ConverseFirst(sessionId, query, context); err == nil {
+		responses = append(responses, result)
+
+		for {
+			if result, err := c.ConverseNext(sessionId, context); err == nil {
+				responses = append(responses, result)
+
+				if *result.Type != "stop" {
+					continue
+				}
+			} else {
+				return nil, err
+			}
+			break
+		}
+
+		return responses, nil
+	} else {
+		return nil, err
+	}
+}
+
 // get meaning of a sentence
 //
 // https://wit.ai/docs/http/20160330#get-intent-via-text-link
