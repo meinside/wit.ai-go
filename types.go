@@ -71,21 +71,17 @@ type Outcome struct {
 type Intent struct {
 	ResponseError
 
-	Id          *string            `json:"id,omitempty"`
-	Name        *string            `json:"name,omitempty"`
-	Doc         *string            `json:"doc,omitempty"`
-	Metadata    *string            `json:"metadata,omitempty"`
-	Expressions []IntentExpression `json:"expressions,omitempty"`
-	Meta        *IntentMeta        `json:"meta,omitempty"`
+	Id          *string                `json:"id,omitempty"`
+	Name        *string                `json:"name,omitempty"`
+	Doc         *string                `json:"doc,omitempty"`
+	Metadata    *string                `json:"metadata,omitempty"`
+	Expressions []IntentExpression     `json:"expressions,omitempty"`
+	Meta        map[string]interface{} `json:"meta,omitempty"`
 }
 
 type IntentExpression struct {
 	Id   *string `json:"id,omitempty"`
 	Body *string `json:"body,omitempty"`
-}
-
-type IntentMeta struct {
-	States []string `json:"states,omitempty"`
 }
 
 type Intents struct {
