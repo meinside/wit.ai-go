@@ -384,7 +384,7 @@ func (c *Client) CreateIntentExpressions(intentIdOrName *string, expressions ...
 // remove an expression from an intent
 //
 // https://wit.ai/docs/http/20160330#destroy-intent-expression-link
-func (c *Client) DeleteIntentExpression(intentIdOrName *string, expressionId *string) (response map[string]string, err error) {
+func (c *Client) DeleteIntentExpression(intentIdOrName, expressionId *string) (response map[string]string, err error) {
 	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/intents/%s/expressions/%s", *intentIdOrName, *expressionId), nil)
 
 	var bytes []byte
@@ -426,7 +426,7 @@ func (c *Client) GetAllEntities() (response []string, err error) {
 // create a new entity
 //
 // https://wit.ai/docs/http/20160330#entities-post-link
-func (c *Client) CreateNewEntity(idOrName *string, doc *string, values ...EntityValue) (response Entity, err error) {
+func (c *Client) CreateNewEntity(idOrName, doc *string, values ...EntityValue) (response Entity, err error) {
 	url := c.makeUrl("https://api.wit.ai/entities", nil)
 
 	data := map[string]interface{}{
@@ -486,7 +486,7 @@ func (c *Client) ShowEntity(entityId *string) (response Entity, err error) {
 // update the values of an entity
 //
 // https://wit.ai/docs/http/20160330#entities-put-link
-func (c *Client) UpdateEntity(entityId *string, doc *string, values ...EntityValue) (response Entity, err error) {
+func (c *Client) UpdateEntity(entityId, doc *string, values ...EntityValue) (response Entity, err error) {
 	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/entities/%s", *entityId), nil)
 
 	body := map[string]interface{}{}
@@ -540,7 +540,7 @@ func (c *Client) DeleteEntity(entityId *string) (response map[string]string, err
 // add a new value to an entity
 //
 // https://wit.ai/docs/http/20160330#create-entity-value-link
-func (c *Client) CreateEntityValue(entityId *string, value *string, expressions []string, metadata *string) (response Entity, err error) {
+func (c *Client) CreateEntityValue(entityId, value *string, expressions []string, metadata *string) (response Entity, err error) {
 	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/entities/%s/values", *entityId), nil)
 
 	body := map[string]interface{}{
@@ -575,7 +575,7 @@ func (c *Client) CreateEntityValue(entityId *string, value *string, expressions 
 // remove a given value from an entity
 //
 // https://wit.ai/docs/http/20160330#delete-entity-value-link
-func (c *Client) DeleteEntityValue(entityId *string, entityValue *string) (response map[string]string, err error) {
+func (c *Client) DeleteEntityValue(entityId, entityValue *string) (response map[string]string, err error) {
 	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/entities/%s/values/%s", *entityId, *entityValue), nil)
 
 	var bytes []byte
@@ -596,7 +596,7 @@ func (c *Client) DeleteEntityValue(entityId *string, entityValue *string) (respo
 // create a new expression for an entity
 //
 // https://wit.ai/docs/http/20160330#create-entity-expression-link
-func (c *Client) CreateEntityExpression(entityId *string, entityValue *string, expression *string) (response Entity, err error) {
+func (c *Client) CreateEntityExpression(entityId, entityValue, expression *string) (response Entity, err error) {
 	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/entities/%s/values/%s/expressions", *entityId, *entityValue), nil)
 
 	body := map[string]interface{}{
@@ -625,7 +625,7 @@ func (c *Client) CreateEntityExpression(entityId *string, entityValue *string, e
 // remove an expression from an entity
 //
 // https://wit.ai/docs/http/20160330#destroy-entity-expression-link
-func (c *Client) DeleteEntityExpression(entityId *string, entityValue *string, expression *string) (response map[string]string, err error) {
+func (c *Client) DeleteEntityExpression(entityId, entityValue, expression *string) (response map[string]string, err error) {
 	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/entities/%s/values/%s/expressions/%s", *entityId, *entityValue, *expression), nil)
 
 	var bytes []byte
