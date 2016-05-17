@@ -24,14 +24,13 @@ const (
 )
 
 func main() {
-	token := Token
-	c := witai.NewClient(&token)
+	c := witai.NewClient(Token)
 
 	//c.Verbose = false
 	c.Verbose = true // for verbose messages
 
 	// message
-	if result, err := c.QueryMessage("how's the weather today?", nil, "", "", 1); err == nil {
+	if result, err := c.QueryMessage("how's the weather today?", nil, "", ""); err == nil {
 		fmt.Printf("query message result: %+v\n", result)
 	} else {
 		fmt.Printf("%s\n", err)
