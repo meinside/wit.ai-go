@@ -18,19 +18,19 @@ const (
 )
 
 // new client with default version
-func NewClient(token *string) *Client {
+func NewClient(token string) *Client {
 	version := DefaultVersion
-	return NewClientWithVersion(token, &version)
+	return NewClientWithVersion(token, version)
 }
 
 // new client with other version
-func NewClientWithVersion(token, version *string) *Client {
-	headerAuth := fmt.Sprintf("Bearer %s", *token)
-	headerAccept := fmt.Sprintf("application/vnd.wit.%s+json", *version)
+func NewClientWithVersion(token, version string) *Client {
+	headerAuth := fmt.Sprintf("Bearer %s", token)
+	headerAccept := fmt.Sprintf("application/vnd.wit.%s+json", version)
 
 	return &Client{
-		Token:        token,
-		Version:      version,
+		Token:        &token,
+		Version:      &version,
 		headerAuth:   &headerAuth,
 		headerAccept: &headerAccept,
 	}
