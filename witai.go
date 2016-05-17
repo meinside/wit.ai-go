@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	DefaultVersion = "20160330" // last update: 2016.04.26.
+	DefaultVersion = "20160516" // last update: 2016.05.17.
 )
 
 // new client with default version
@@ -127,9 +127,87 @@ func (c *Client) makeUrl(baseUrl string, params map[string]interface{}) *string 
 	return &url
 }
 
+// get meaning of a sentence
+//
+// https://wit.ai/docs/http/20160516#get--message-link
+func (c *Client) QueryMessage(query string, context interface{}, messageId, threadId string) (response Message, err error) {
+	params := map[string]interface{}{
+		"q": query,
+	}
+	if context != nil {
+		params["context"] = context
+	}
+	if len(messageId) > 0 {
+		params["msg_id"] = messageId
+	}
+	if len(threadId) > 0 {
+		params["thread_id"] = threadId
+	}
+
+	url := c.makeUrl("https://api.wit.ai/message", params)
+
+	var bytes []byte
+	if bytes, err = c.request("GET", *url, context); err == nil {
+		var msgRes Message
+		if err = json.Unmarshal(bytes, &msgRes); err == nil {
+			if !msgRes.HasError() {
+				response = msgRes
+			} else {
+				err = fmt.Errorf("message response error: %s", msgRes.ErrorMessage())
+			}
+		} else {
+			err = fmt.Errorf("message parse error: %s", err)
+		}
+	} else {
+		err = fmt.Errorf("message request error: %s", err)
+	}
+
+	return response, err
+}
+
+// get meaning of audio (mp3 format)
+//
+// https://wit.ai/docs/http/20160516#post--speech-link
+func (c *Client) QuerySpeechMp3(filepath string, context interface{}, messageId, threadId string, n int) (response Message, err error) {
+	params := map[string]interface{}{}
+	if context != nil {
+		params["context"] = context
+	}
+	if len(messageId) > 0 {
+		params["msg_id"] = messageId
+	}
+	if len(threadId) > 0 {
+		params["thread_id"] = threadId
+	}
+	if n <= 0 {
+		n = 1
+	}
+	params["n"] = n
+
+	url := c.makeUrl("https://api.wit.ai/speech", params)
+
+	var bytes []byte
+	if bytes, err = c.upload("POST", *url, filepath, "audio/mpeg3"); err == nil {
+		var speechRes Message
+		if err = json.Unmarshal(bytes, &speechRes); err == nil {
+			if !speechRes.HasError() {
+				response = speechRes
+			} else {
+				err = fmt.Errorf("speech response error: %s", speechRes.ErrorMessage())
+			}
+		} else {
+			err = fmt.Errorf("speech parse error: %s", err)
+		}
+	} else {
+		err = fmt.Errorf("speech request error: %s", err)
+	}
+
+	return response, err
+}
+
 // get next steps
 //
-// https://wit.ai/docs/http/20160330#converse-link
+// https://wit.ai/docs/http/20160516#post--converse-link
 func (c *Client) ConverseFirst(sessionId, query string, context interface{}) (response Converse, err error) {
 	params := map[string]interface{}{
 		"session_id": sessionId,
@@ -189,253 +267,9 @@ func (c *Client) ConverseAll(sessionId, query string, context interface{}) (resp
 	}
 }
 
-// get meaning of a sentence
-//
-// https://wit.ai/docs/http/20160330#get-intent-via-text-link
-func (c *Client) QueryMessage(query string, context interface{}, messageId, threadId string, n int) (response Message, err error) {
-	params := map[string]interface{}{
-		"q": query,
-	}
-	if context != nil {
-		params["context"] = context
-	}
-	if len(messageId) > 0 {
-		params["msg_id"] = messageId
-	}
-	if len(threadId) > 0 {
-		params["thread_id"] = threadId
-	}
-	if n <= 0 {
-		n = 1
-	}
-	params["n"] = n
-
-	url := c.makeUrl("https://api.wit.ai/message", params)
-
-	var bytes []byte
-	if bytes, err = c.request("GET", *url, context); err == nil {
-		var msgRes Message
-		if err = json.Unmarshal(bytes, &msgRes); err == nil {
-			if !msgRes.HasError() {
-				response = msgRes
-			} else {
-				err = fmt.Errorf("message response error: %s", msgRes.ErrorMessage())
-			}
-		} else {
-			err = fmt.Errorf("message parse error: %s", err)
-		}
-	} else {
-		err = fmt.Errorf("message request error: %s", err)
-	}
-
-	return response, err
-}
-
-// get meaning of audio (mp3 format)
-//
-// https://wit.ai/docs/http/20160330#get-intent-via-speech-link
-func (c *Client) QuerySpeechMp3(filepath string, context interface{}, messageId, threadId string, n int) (response Message, err error) {
-	params := map[string]interface{}{}
-	if context != nil {
-		params["context"] = context
-	}
-	if len(messageId) > 0 {
-		params["msg_id"] = messageId
-	}
-	if len(threadId) > 0 {
-		params["thread_id"] = threadId
-	}
-	if n <= 0 {
-		n = 1
-	}
-	params["n"] = n
-
-	url := c.makeUrl("https://api.wit.ai/speech", params)
-
-	var bytes []byte
-	if bytes, err = c.upload("POST", *url, filepath, "audio/mpeg3"); err == nil {
-		var speechRes Message
-		if err = json.Unmarshal(bytes, &speechRes); err == nil {
-			if !speechRes.HasError() {
-				response = speechRes
-			} else {
-				err = fmt.Errorf("speech response error: %s", speechRes.ErrorMessage())
-			}
-		} else {
-			err = fmt.Errorf("speech parse error: %s", err)
-		}
-	} else {
-		err = fmt.Errorf("speech request error: %s", err)
-	}
-
-	return response, err
-}
-
-// create new intents
-//
-// https://wit.ai/docs/http/20160330#intents-post-link
-func (c *Client) CreateIntent(intents ...Intent) (response Intents, err error) {
-	var data interface{}
-
-	if len(intents) > 1 {
-		data = intents
-	} else {
-		data = intents[0]
-	}
-
-	url := c.makeUrl("https://api.wit.ai/intents", nil)
-
-	var bytes []byte
-	if bytes, err = c.request("POST", *url, data); err == nil {
-		var intentsRes Intents
-		if err = json.Unmarshal(bytes, &intentsRes); err == nil {
-			if !intentsRes.HasError() {
-				response = intentsRes
-			} else {
-				err = fmt.Errorf("new intents response error: %s", intentsRes.ErrorMessage())
-			}
-		} else {
-			err = fmt.Errorf("new intents parse error: %s", err)
-		}
-	} else {
-		err = fmt.Errorf("new intents request error: %s", err)
-	}
-
-	return response, err
-}
-
-// retrieve the list of all intents
-//
-// https://wit.ai/docs/http/20160330#intents-index-link
-func (c *Client) GetAllIntents() (response []Intent, err error) {
-	url := c.makeUrl("https://api.wit.ai/intents", nil)
-
-	var bytes []byte
-	if bytes, err = c.request("GET", *url, nil); err == nil {
-		var intentsRes []Intent
-		if err = json.Unmarshal(bytes, &intentsRes); err == nil {
-			response = intentsRes
-		} else {
-			err = fmt.Errorf("intent list parse error: %s", err)
-		}
-	} else {
-		err = fmt.Errorf("intent list request error: %s", err)
-	}
-
-	return response, err
-}
-
-// retrieve all entities and expressions of an intent
-//
-// https://wit.ai/docs/http/20160330#intent-show-link
-func (c *Client) ShowIntent(intentIdOrName *string) (response IntentDetail, err error) {
-	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/intents/%s", *intentIdOrName), nil)
-
-	var bytes []byte
-	if bytes, err = c.request("GET", *url, nil); err == nil {
-		var intentRes IntentDetail
-		if err = json.Unmarshal(bytes, &intentRes); err == nil {
-			if !intentRes.HasError() {
-				response = intentRes
-			} else {
-				err = fmt.Errorf("show intent response error: %s", intentRes.ErrorMessage())
-			}
-		} else {
-			err = fmt.Errorf("show intent parse error: %s", err)
-		}
-	} else {
-		err = fmt.Errorf("show intent request error: %s", err)
-	}
-
-	return response, err
-}
-
-// update intent attributes
-//
-// https://wit.ai/docs/http/20160330#intent-put-link
-func (c *Client) UpdateIntentAttrs(intentIdOrName, name, doc, metadata *string) (response IntentAttributes, err error) {
-	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/intents/%s", *intentIdOrName), nil)
-
-	body := map[string]interface{}{}
-	if name != nil {
-		body["name"] = *name
-	}
-	if doc != nil {
-		body["doc"] = *doc
-	}
-	if metadata != nil {
-		body["metadata"] = *metadata
-	}
-
-	var bytes []byte
-	if bytes, err = c.request("PUT", *url, body); err == nil {
-		var intentRes IntentAttributes
-		if err = json.Unmarshal(bytes, &intentRes); err == nil {
-			if !intentRes.HasError() {
-				response = intentRes
-			} else {
-				err = fmt.Errorf("update intent attrs response error: %s", intentRes.ErrorMessage())
-			}
-		} else {
-			err = fmt.Errorf("update intent attrs parse error: %s", err)
-		}
-	} else {
-		err = fmt.Errorf("update intent attrs request error: %s", err)
-	}
-
-	return response, err
-}
-
-// add new expressions to an intent
-//
-// https://wit.ai/docs/http/20160330#create-intent-expressions-link
-func (c *Client) CreateIntentExpressions(intentIdOrName *string, expressions ...string) (response []IntentExpressionCreated, err error) {
-	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/intents/%s/expressions", *intentIdOrName), nil)
-
-	body := []interface{}{}
-	for _, expression := range expressions {
-		body = append(body, map[string]string{"body": expression})
-	}
-
-	var bytes []byte
-	if bytes, err = c.request("POST", *url, body); err == nil {
-		var intentRes []IntentExpressionCreated
-		if err = json.Unmarshal(bytes, &intentRes); err == nil {
-			response = intentRes
-		} else {
-			err = fmt.Errorf("create intent expressions parse error: %s", err)
-		}
-	} else {
-		err = fmt.Errorf("create intent expressions request error: %s", err)
-	}
-
-	return response, err
-}
-
-// remove an expression from an intent
-//
-// https://wit.ai/docs/http/20160330#destroy-intent-expression-link
-func (c *Client) DeleteIntentExpression(intentIdOrName, expressionId *string) (response map[string]string, err error) {
-	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/intents/%s/expressions/%s", *intentIdOrName, *expressionId), nil)
-
-	var bytes []byte
-	if bytes, err = c.request("DELETE", *url, nil); err == nil {
-		var exprRes map[string]string
-		if err = json.Unmarshal(bytes, &exprRes); err == nil {
-			response = exprRes
-		} else {
-			err = fmt.Errorf("delete expression parse error: %s", err)
-		}
-	} else {
-		err = fmt.Errorf("delete expression request error: %s", err)
-	}
-
-	return response, err
-}
-
 // retrieve the list of all available entities
 //
-// https://wit.ai/docs/http/20160330#entities-index-link
+// https://wit.ai/docs/http/20160516#get--entities-link
 func (c *Client) GetAllEntities() (response []string, err error) {
 	url := c.makeUrl("https://api.wit.ai/entities", nil)
 
@@ -456,7 +290,7 @@ func (c *Client) GetAllEntities() (response []string, err error) {
 
 // create a new entity
 //
-// https://wit.ai/docs/http/20160330#entities-post-link
+// https://wit.ai/docs/http/20160516#post--entities-link
 func (c *Client) CreateEntity(idOrName, doc *string, values ...EntityValue) (response Entity, err error) {
 	url := c.makeUrl("https://api.wit.ai/entities", nil)
 
@@ -491,7 +325,7 @@ func (c *Client) CreateEntity(idOrName, doc *string, values ...EntityValue) (res
 
 // retrieve all values of an entity
 //
-// https://wit.ai/docs/http/20160330#entities-show-link
+// https://wit.ai/docs/http/20160516#get--entities-:entity-id-link
 func (c *Client) ShowEntity(entityId *string) (response Entity, err error) {
 	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/entities/%s", *entityId), nil)
 
@@ -516,7 +350,7 @@ func (c *Client) ShowEntity(entityId *string) (response Entity, err error) {
 
 // update the values of an entity
 //
-// https://wit.ai/docs/http/20160330#entities-put-link
+// https://wit.ai/docs/http/20160516#put--entities-:entity-id-link
 func (c *Client) UpdateEntity(entityId, doc *string, values ...EntityValue) (response Entity, err error) {
 	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/entities/%s", *entityId), nil)
 
@@ -549,7 +383,7 @@ func (c *Client) UpdateEntity(entityId, doc *string, values ...EntityValue) (res
 
 // delete an entity
 //
-// https://wit.ai/docs/http/20160330#entities-destroy-link
+// https://wit.ai/docs/http/20160516#delete--entities-:entity-id-link
 func (c *Client) DeleteEntity(entityId *string) (response map[string]string, err error) {
 	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/entities/%s", *entityId), nil)
 
@@ -568,9 +402,9 @@ func (c *Client) DeleteEntity(entityId *string) (response map[string]string, err
 	return response, err
 }
 
-// add a new value to an entity
+// add new values to an entity
 //
-// https://wit.ai/docs/http/20160330#create-entity-value-link
+// https://wit.ai/docs/http/20160516#post--entities-:entity-id-values-link
 func (c *Client) CreateEntityValue(entityId, value *string, expressions []string, metadata *string) (response Entity, err error) {
 	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/entities/%s/values", *entityId), nil)
 
@@ -605,7 +439,7 @@ func (c *Client) CreateEntityValue(entityId, value *string, expressions []string
 
 // remove a given value from an entity
 //
-// https://wit.ai/docs/http/20160330#delete-entity-value-link
+// https://wit.ai/docs/http/20160516#delete--entities-:entity-id-values-link
 func (c *Client) DeleteEntityValue(entityId, entityValue *string) (response map[string]string, err error) {
 	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/entities/%s/values/%s", *entityId, *entityValue), nil)
 
@@ -626,7 +460,7 @@ func (c *Client) DeleteEntityValue(entityId, entityValue *string) (response map[
 
 // create a new expression for an entity
 //
-// https://wit.ai/docs/http/20160330#create-entity-expression-link
+// https://wit.ai/docs/http/20160516#post--entities-:entity-id-values-:value-id-expressions-link
 func (c *Client) CreateEntityExpression(entityId, entityValue, expression *string) (response Entity, err error) {
 	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/entities/%s/values/%s/expressions", *entityId, *entityValue), nil)
 
@@ -655,7 +489,7 @@ func (c *Client) CreateEntityExpression(entityId, entityValue, expression *strin
 
 // remove an expression from an entity
 //
-// https://wit.ai/docs/http/20160330#destroy-entity-expression-link
+// https://wit.ai/docs/http/20160516#delete--entities-:entity-id-values-:value-id-expressions-link
 func (c *Client) DeleteEntityExpression(entityId, entityValue, expression *string) (response map[string]string, err error) {
 	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/entities/%s/values/%s/expressions/%s", *entityId, *entityValue, *expression), nil)
 
@@ -674,10 +508,179 @@ func (c *Client) DeleteEntityExpression(entityId, entityValue, expression *strin
 	return response, err
 }
 
-// retrieve an existing message
+// (DEPRECATED) create new intents
+//
+// https://wit.ai/docs/http/20160330#intents-post-link
+// => https://wit.ai/docs/http/20160516#post--intents-(deprecated)-link
+func (c *Client) CreateIntent_deprecated(intents ...Intent) (response Intents, err error) {
+	var data interface{}
+
+	if len(intents) > 1 {
+		data = intents
+	} else {
+		data = intents[0]
+	}
+
+	url := c.makeUrl("https://api.wit.ai/intents", nil)
+
+	var bytes []byte
+	if bytes, err = c.request("POST", *url, data); err == nil {
+		var intentsRes Intents
+		if err = json.Unmarshal(bytes, &intentsRes); err == nil {
+			if !intentsRes.HasError() {
+				response = intentsRes
+			} else {
+				err = fmt.Errorf("new intents response error: %s", intentsRes.ErrorMessage())
+			}
+		} else {
+			err = fmt.Errorf("new intents parse error: %s", err)
+		}
+	} else {
+		err = fmt.Errorf("new intents request error: %s", err)
+	}
+
+	return response, err
+}
+
+// (DEPRECATED) retrieve the list of all intents
+//
+// https://wit.ai/docs/http/20160330#intents-index-link
+// => https://wit.ai/docs/http/20160516#get--intents-(deprecated)-link
+func (c *Client) GetAllIntents_deprecated() (response []Intent, err error) {
+	url := c.makeUrl("https://api.wit.ai/intents", nil)
+
+	var bytes []byte
+	if bytes, err = c.request("GET", *url, nil); err == nil {
+		var intentsRes []Intent
+		if err = json.Unmarshal(bytes, &intentsRes); err == nil {
+			response = intentsRes
+		} else {
+			err = fmt.Errorf("intent list parse error: %s", err)
+		}
+	} else {
+		err = fmt.Errorf("intent list request error: %s", err)
+	}
+
+	return response, err
+}
+
+// (DEPRECATED) retrieve all entities and expressions of an intent
+//
+// https://wit.ai/docs/http/20160330#intent-show-link
+// => https://wit.ai/docs/http/20160516#get--intents-:intent-id-(deprecated)-link
+func (c *Client) ShowIntent_deprecated(intentIdOrName *string) (response IntentDetail, err error) {
+	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/intents/%s", *intentIdOrName), nil)
+
+	var bytes []byte
+	if bytes, err = c.request("GET", *url, nil); err == nil {
+		var intentRes IntentDetail
+		if err = json.Unmarshal(bytes, &intentRes); err == nil {
+			if !intentRes.HasError() {
+				response = intentRes
+			} else {
+				err = fmt.Errorf("show intent response error: %s", intentRes.ErrorMessage())
+			}
+		} else {
+			err = fmt.Errorf("show intent parse error: %s", err)
+		}
+	} else {
+		err = fmt.Errorf("show intent request error: %s", err)
+	}
+
+	return response, err
+}
+
+// (DEPRECATED) update intent attributes
+//
+// https://wit.ai/docs/http/20160330#intent-put-link
+// => https://wit.ai/docs/http/20160516#put--intents-:intent-id-(deprecated)-link
+func (c *Client) UpdateIntentAttrs_deprecated(intentIdOrName, name, doc, metadata *string) (response IntentAttributes, err error) {
+	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/intents/%s", *intentIdOrName), nil)
+
+	body := map[string]interface{}{}
+	if name != nil {
+		body["name"] = *name
+	}
+	if doc != nil {
+		body["doc"] = *doc
+	}
+	if metadata != nil {
+		body["metadata"] = *metadata
+	}
+
+	var bytes []byte
+	if bytes, err = c.request("PUT", *url, body); err == nil {
+		var intentRes IntentAttributes
+		if err = json.Unmarshal(bytes, &intentRes); err == nil {
+			if !intentRes.HasError() {
+				response = intentRes
+			} else {
+				err = fmt.Errorf("update intent attrs response error: %s", intentRes.ErrorMessage())
+			}
+		} else {
+			err = fmt.Errorf("update intent attrs parse error: %s", err)
+		}
+	} else {
+		err = fmt.Errorf("update intent attrs request error: %s", err)
+	}
+
+	return response, err
+}
+
+// (DEPRECATED) add new expressions to an intent
+//
+// https://wit.ai/docs/http/20160330#create-intent-expressions-link
+// => https://wit.ai/docs/http/20160516#post--intents-:intent-id-expressions-(deprecated)-link
+func (c *Client) CreateIntentExpressions_deprecated(intentIdOrName *string, expressions ...string) (response []IntentExpressionCreated, err error) {
+	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/intents/%s/expressions", *intentIdOrName), nil)
+
+	body := []interface{}{}
+	for _, expression := range expressions {
+		body = append(body, map[string]string{"body": expression})
+	}
+
+	var bytes []byte
+	if bytes, err = c.request("POST", *url, body); err == nil {
+		var intentRes []IntentExpressionCreated
+		if err = json.Unmarshal(bytes, &intentRes); err == nil {
+			response = intentRes
+		} else {
+			err = fmt.Errorf("create intent expressions parse error: %s", err)
+		}
+	} else {
+		err = fmt.Errorf("create intent expressions request error: %s", err)
+	}
+
+	return response, err
+}
+
+// (DEPRECATED) remove an expression from an intent
+//
+// https://wit.ai/docs/http/20160330#destroy-intent-expression-link
+// => https://wit.ai/docs/http/20160516#delete--intents-:intent-id-expressions-:expression-id-(deprecated)-link
+func (c *Client) DeleteIntentExpression_deprecated(intentIdOrName, expressionId *string) (response map[string]string, err error) {
+	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/intents/%s/expressions/%s", *intentIdOrName, *expressionId), nil)
+
+	var bytes []byte
+	if bytes, err = c.request("DELETE", *url, nil); err == nil {
+		var exprRes map[string]string
+		if err = json.Unmarshal(bytes, &exprRes); err == nil {
+			response = exprRes
+		} else {
+			err = fmt.Errorf("delete expression parse error: %s", err)
+		}
+	} else {
+		err = fmt.Errorf("delete expression request error: %s", err)
+	}
+
+	return response, err
+}
+
+// (DEPRECATED) retrieve an existing message
 //
 // https://wit.ai/docs/http/20160330#get-message-link
-func (c *Client) GetMessage(messageId *string) (response Message, err error) {
+// => https://wit.ai/docs/http/20160516#get--messages-:msg-id-(deprecated)-link
+func (c *Client) GetMessage_deprecated(messageId *string) (response Message, err error) {
 	url := c.makeUrl(fmt.Sprintf("https://api.wit.ai/messages/%s", *messageId), nil)
 
 	var bytes []byte
